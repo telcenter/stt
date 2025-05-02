@@ -3,43 +3,58 @@ load_dotenv()
 import os
 import speech_recognition as sr
 
-GOOGLE_SPEECH_API_KEY = os.getenv("GOOGLE_SPEECH_API_KEY", None) or None
+GOOGLE_SPEECH_API_KEYS = os.getenv("GOOGLE_SPEECH_API_KEYS", [None]) or [None]
+if type(GOOGLE_SPEECH_API_KEYS) == str:
+    GOOGLE_SPEECH_API_KEYS = [*GOOGLE_SPEECH_API_KEYS.split(";"), None]
+elif type(GOOGLE_SPEECH_API_KEYS) != list:
+    raise ValueError("GOOGLE_SPEECH_API_KEYS must be a string containing a list of keys separated by semicolons ; got: %s" % GOOGLE_SPEECH_API_KEYS)
 
-class StreamedAudio(sr.AudioSource):
-    def __init__(self):
-        print("OK")
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import tempfile
 
-def listen_forever(stop_word: str = "tắt mô hình"):
-    r = sr.Recognizer()
+class STTResponse(BaseModel):
+    text: str | None = None
+    error: str | None = None
+    details: str | None = None
 
-    with sr.Microphone() as source:
-    # with StreamedAudio() as source:
-        print("🔊 Đang chỉnh mic, đợi xíu nghen:))))")
-        r.adjust_for_ambient_noise(source, duration=1)
-        print("✅ Mời bạn nói:")
+app = FastAPI()
 
-        while True:
-            try:
-                print("🎙️ Mời bạn nói")
-                audio = r.listen(source, timeout=None)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or restrict to your domain
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-                text = r.recognize_google(audio, language="vi-VN", key=GOOGLE_SPEECH_API_KEY)
-                print("👤 Bạn -->", text)
+@app.post('/stt', response_model=STTResponse)
+async def stt(file: UploadFile = File(...)):
+    recognizer = sr.Recognizer()
+    content = await file.read()
 
-                if stop_word.lower() in text.lower():
-                    print("🛑 Phát hiện từ khóa dừng. Dừng chương trình.")
-                    break
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp:
+        tmp.write(content)
+        tmp.flush()
+        tmp.seek(0)
 
-            except sr.UnknownValueError:
-                print("🥹 Xin lỗi, tôi không nghe rõ. Bạn có thể nói lại khum ")
-            except sr.RequestError as e:
-                print(f"❌ Lỗi khi gọi dịch vụ (API) nhận dạng: {e}")
+        with sr.AudioFile(tmp.name) as source:
+            error_message = ""
+            audio_data = recognizer.record(source)
 
-
-listen_forever()
-
-# Bẻ từng file audio thành nhiều đoạn nhỏ hơn 1 phút
-
-# Giới hạn thời lượng 1 file audio là 1 phút, nếu dài hơn sẽ bị lỗi
-# 5 phút cần reconnect 1 lần
-# tối đa 60p / tháng
+            for i, key in enumerate(GOOGLE_SPEECH_API_KEYS, start=1):
+                try:
+                    text = recognizer.recognize_google(audio_data, language="vi-VN", key=key)
+                    return { "text": text }
+                except sr.UnknownValueError:
+                    return { "error": "SCRAMBLED" }
+                except sr.RequestError as e:
+                    error_message = str(e)
+                    if "403" in error_message:
+                        print(f"Key {i} seems invalid or has exceeded its quota. Retrying another...")
+                        continue
+                    return { "error": "API_ERROR", "details": f"{e}" }
+                except Exception as e:
+                    return { "error": "INTERNAL_SERVER_ERROR", "details": f"{e}" }
+            
+            return { "error": "API_QUOTA_EXCEEDED", "details": error_message }
