@@ -11,12 +11,16 @@ httpcore==1.0.9
 httptools==0.6.4
 httpx==0.28.1
 idna==3.10
+itsdangerous==2.2.0
 Jinja2==3.1.6
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 mdurl==0.1.2
+orjson==3.10.18
 PyAudio==0.2.14
 pydantic==2.11.4
+pydantic-extra-types==2.10.4
+pydantic-settings==2.9.1
 pydantic_core==2.33.2
 Pygments==2.19.1
 python-dotenv==1.1.0
@@ -29,9 +33,11 @@ shellingham==1.5.4
 sniffio==1.3.1
 SpeechRecognition==3.14.2
 starlette==0.46.2
+telcenter-ser @ git+https://github.com/telcenter/ser.git@136edf5500b7172470155d31435d6d35372728a1
 typer==0.15.3
 typing-inspection==0.4.0
 typing_extensions==4.13.2
+ujson==5.10.0
 uvicorn==0.34.2
 uvloop==0.21.0
 watchfiles==1.0.5
