@@ -20,6 +20,9 @@ Given that `$PROJECT_ROOT` is the path to this project's root directory.
     `.env.example` into a new file named `.env`, then set the
     environment variables appropriately.
 
+    To setup Google auth environment please also see the Google Speech-to-Text API guide
+    (google it!)
+
 4. Run
 
     ```sh

@@ -10,8 +10,8 @@ async def stt(file_path: str):
 
         for i, key in enumerate(GOOGLE_SPEECH_API_KEYS, start=1):
             try:
-                text = recognizer.recognize_google(
-                    audio_data, language="vi-VN", key=key
+                text = recognizer.recognize_google_cloud(
+                    audio_data, language_code="vi-VN",
                 )
                 return {"text": text}
             except sr.UnknownValueError:

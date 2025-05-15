@@ -16,7 +16,7 @@ def tts(text: str, file_name: str) -> str | None:
 
     try:
         try:
-            tts = gTTS(text=text, lang="vi", slow=False)
+            tts = gTTS(text=text, lang="vi", slow=False, timeout=5)
             tts.save(file_name)
             print("✅ Đã chuyển đổi thành công bằng gTTS!")
             return

@@ -6,7 +6,6 @@ import tempfile
 import asyncio
 from audio_processing import stt, ser, tts
 import os
-from tempfile import NamedTemporaryFile
 
 class STTResponse(BaseModel):
     text: str | None = None
@@ -67,7 +66,7 @@ async def route_tts(request: TTSRequest, background_tasks: BackgroundTasks):
     # Generate temporary file name using math random
     file_name = f"{tempfile.gettempdir()}/{random.randint(1000, 9999)}.mp3"
 
-    tts(text, file_name)
+    await asyncio.to_thread(tts, text, file_name)
     print(f"TTS File name: {file_name}")
     if file_name is None:
         raise Exception("TTS failed")
