@@ -1,4 +1,8 @@
-# Speech-To-Text (STT) Backend
+# STT+SER+TTS Backend
+
+STT = Speech-to-Text
+SER = Speech Emotion Recognition
+TTS = Text-to-Speech
 
 ## Setup
 
@@ -30,5 +34,5 @@ Given that `$PROJECT_ROOT` is the path to this project's root directory.
 ```sh
 cd $PROJECT_ROOT
 source ./venv/bin/activate
-fastapi run main.py --host 0.0.0.0 --port 8000
+fastapi run main.py --host 0.0.0.0 --port 7123
 ```

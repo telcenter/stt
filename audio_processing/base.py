@@ -11,3 +11,10 @@ elif type(GOOGLE_SPEECH_API_KEYS) != list:
         "GOOGLE_SPEECH_API_KEYS must be a string containing a list of keys separated by semicolons ; got: %s"
         % GOOGLE_SPEECH_API_KEYS
     )
+
+DISABLE_GPU = os.getenv("DISABLE_GPU", "0") == "1"
+if DISABLE_GPU:
+    import tensorflow as tf
+
+    tf.config.set_visible_devices([], "GPU")
+    print("NOTE: GPU is disabled. Inference will be run on CPU.")
